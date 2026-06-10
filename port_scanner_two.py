@@ -13,13 +13,16 @@ def scan(host, port, timeout = 0.5):
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         # Définit un timeout pour éviter d'attendre indéfiniment (ex: port bloqué)
         sock.settimeout(timeout)
-        # Tente de se connecter au port
+        # Tente de se connecter au port et on récupère le service associé au port
         result = sock.connect_ex((host, port))
+        service = socket.getservbyport(port, 'tcp') 
         # Ferme le socket
         sock.close()
 
         if result == 0:
-            return port # 0 = connexion réussie
+            # Si le port est ouvert (connexino réussie)
+            # On renvoie le port le type de service associé
+            return (port, service)
         return None
     
 
@@ -46,7 +49,7 @@ if __name__ == "__main__":
                         help='Host to scan')
     parser.add_argument('--ports', metavar='str', required=True,
                         help='port range to scan (ex: "1-1024")')
-    parser.add_argument('--threads', metavar='srt', required=False, default=48,
+    parser.add_argument('--threads', metavar='int', required=False, default=48,
                         help='Number of threads to use')
     args = parser.parse_args()
 
@@ -67,10 +70,10 @@ if __name__ == "__main__":
     target = args.host
     threads = int(args.threads)
 
-    portsOuverts = []
+    portsOuverts = {}
 
-    print(f"Scan du port {min(ports)} à {max(ports)} en cours...")
-
+    print("-"*40)
+    print(f"Scan du port {min(ports)} à {max(ports)} en cours sur l'hote {target}...")
     startTime = time.time()
 
     # Utilisation d'un ThreadPoolExecutor pour scanner les ports en parallèle 
@@ -88,20 +91,25 @@ if __name__ == "__main__":
         for future in tqdm(concurrent.futures.as_completed(future_to_port), total=len(ports), desc=f"Scan de l'adresse {target}"):
             port = future_to_port[future]
             try:
-                result = future.result()
-                if result is not None:
-                    portsOuverts.append(result)
+                (port, service) = future.result()
+                if port is not None and service is not None:
+                    # Si le port est ouvert, on ajoute le port et le service
+                    # associé au dictionnaire des ports ouverts.
+                    portsOuverts[port] = service
             except Exception as exc:
                 pass
     
     # On affiche le resultat du scan
+    print("-"*40)
     print("\nScan terminé.")
+    print("-"*40)
     if portsOuverts:
         print("Ports ouverts:")
-        for port in sorted(portsOuverts):
-            print(f"  Port {port}")
+        for port, service in sorted(portsOuverts.items()):
+            print(f"  Port {port} ({service})")
     else:
         print("Aucun port ouvert trouvé.")
 
+    # Affichage du temps de scan
     endTime = time.time()
     print(f"Temps de scan: {endTime - startTime:.2f} secondes.")
