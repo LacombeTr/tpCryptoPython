@@ -37,12 +37,17 @@ def scan(host, port, timeout = 0.5):
 # Script principal
 if __name__ == "__main__":
 
-    # On utilise argparse pour permettre à l'utilisateur de spécifier la plage de ports à scanner via la ligne de commande.
+    # On utilise argparse pour permettre à l'utilisateur de spécifier:
+    #   - l'adresse IP ou hostname à scanner via la ligne de commande.
+    #   - la plage de ports à scanner via la ligne de commande.
+    #   - le nombre de threads à utiliser pour le scan (optionnel, par défaut 48).
     parser = argparse.ArgumentParser()
     parser.add_argument('--host', metavar='str', required=True,
                         help='Host to scan')
     parser.add_argument('--ports', metavar='str', required=True,
                         help='port range to scan (ex: "1-1024")')
+    parser.add_argument('--threads', metavar='srt', required=False, default=48,
+                        help='Number of threads to use')
     args = parser.parse_args()
 
     # On parse la plage de ports fournie par l'utilisateur
@@ -60,6 +65,7 @@ if __name__ == "__main__":
 
     # On récupère l'host depuis les arguments
     target = args.host
+    threads = int(args.threads)
 
     portsOuverts = []
 
@@ -73,7 +79,7 @@ if __name__ == "__main__":
 
     # Note: ThreadPoolExecutor inclu de facon native une queue et un lock, il ne sont donc pas explicités
     # mais bien utilisés en interne pour gérer la synchronisation des threads.
-    with ThreadPoolExecutor(max_workers=128) as executor:
+    with ThreadPoolExecutor(max_workers=threads) as executor:
         
         # On soumet une tache de scan pour chaque port à l'executor et on garde une référence future_to_port pour associer les résultats aux ports scannés.
         future_to_port = {executor.submit(scan, target, port): port for port in ports}
