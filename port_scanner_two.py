@@ -1,6 +1,7 @@
 from concurrent.futures import ThreadPoolExecutor
 import socket
 import concurrent.futures
+import time
 from tqdm import tqdm
 
 ports = range(1, 1024)
@@ -42,6 +43,8 @@ if __name__ == "__main__":
 
     portsOuverts = []
 
+    startTime = time.time()
+
     # Utilisation d'un ThreadPoolExecutor pour scanner les ports en parallèle 
     # Solution native de Python pour gérer un pool de threads et exécuter des tâches de manière simultanée.
     # https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
@@ -68,3 +71,6 @@ if __name__ == "__main__":
             print(f"  Port {port}")
     else:
         print("Aucun port ouvert trouvé.")
+
+    endTime = time.time()
+    print(f"Temps de scan: {endTime - startTime:.2f} secondes.")
