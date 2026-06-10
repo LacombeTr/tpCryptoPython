@@ -1,9 +1,11 @@
 from concurrent.futures import ThreadPoolExecutor
+import datetime
 import socket
 import concurrent.futures
 import time
 from tqdm import tqdm
 import argparse
+import csv
 
 # Fonction de scan d'un port
 def scan(host, port, timeout = 0.5):
@@ -113,3 +115,12 @@ if __name__ == "__main__":
     # Affichage du temps de scan
     endTime = time.time()
     print(f"Temps de scan: {endTime - startTime:.2f} secondes.")
+
+    # Enregistrement des résultats dans un fichier CSV
+    with open(f'scan_results_{target}_{datetime.date.today()}.csv', mode='w', newline='') as csv_file:
+        fieldnames = ['Port', 'Service']
+        writer = csv.DictWriter(csv_file, fieldnames=fieldnames)
+
+        writer.writeheader()
+        for port, service in sorted(portsOuverts.items()):
+            writer.writerow({'Port': port, 'Service': service})
