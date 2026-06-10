@@ -3,8 +3,7 @@ import socket
 import concurrent.futures
 import time
 from tqdm import tqdm
-
-ports = range(1, 1024)
+import argparse
 
 # Fonction de scan d'un port
 def scan(host, port, timeout = 0.5):
@@ -38,10 +37,31 @@ def scan(host, port, timeout = 0.5):
 # Script principal
 if __name__ == "__main__":
 
+    # On utilise argparse pour permettre à l'utilisateur de spécifier la plage de ports à scanner via la ligne de commande.
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--ports', metavar='str', required=True,
+                        help='port range to scan (ex: "1-1024")')
+    args = parser.parse_args()
+
+    # On parse la plage de ports fournie par l'utilisateur
+    try:
+        startPort, endPort = map(int, args.ports.split('-'))
+
+        # On verifie que l;utilisateur n'entre pas de port impossible (negatif ou audela de 65534)
+        # ou de port de debut plus grand que le port de fin
+        if startPort < 1 or endPort > 65535 or startPort > endPort:
+            raise ValueError
+        ports = range(startPort, endPort + 1)
+    except ValueError:
+        print("Invalid port range. Please provide a valid range (ex: '1-1024').")
+        exit(1)
+
     # On prompte l'utilisateur pour l'adresse IP ou hostname à scanner
     target = input("Entrez l'adresse IP ou hostname : ")
 
     portsOuverts = []
+
+    print(f"Scan du port {min(ports)} à {max(ports)} en cours...")
 
     startTime = time.time()
 
