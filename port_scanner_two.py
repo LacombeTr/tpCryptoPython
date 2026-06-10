@@ -39,6 +39,8 @@ if __name__ == "__main__":
 
     # On utilise argparse pour permettre à l'utilisateur de spécifier la plage de ports à scanner via la ligne de commande.
     parser = argparse.ArgumentParser()
+    parser.add_argument('--host', metavar='str', required=True,
+                        help='Host to scan')
     parser.add_argument('--ports', metavar='str', required=True,
                         help='port range to scan (ex: "1-1024")')
     args = parser.parse_args()
@@ -56,8 +58,8 @@ if __name__ == "__main__":
         print("Invalid port range. Please provide a valid range (ex: '1-1024').")
         exit(1)
 
-    # On prompte l'utilisateur pour l'adresse IP ou hostname à scanner
-    target = input("Entrez l'adresse IP ou hostname : ")
+    # On récupère l'host depuis les arguments
+    target = args.host
 
     portsOuverts = []
 
