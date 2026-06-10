@@ -70,6 +70,9 @@ if __name__ == "__main__":
     # Utilisation d'un ThreadPoolExecutor pour scanner les ports en parallèle 
     # Solution native de Python pour gérer un pool de threads et exécuter des tâches de manière simultanée.
     # https://docs.python.org/3/library/concurrent.futures.html#threadpoolexecutor-example
+
+    # Note: ThreadPoolExecutor inclu de facon native une queue et un lock, il ne sont donc pas explicités
+    # mais bien utilisés en interne pour gérer la synchronisation des threads.
     with ThreadPoolExecutor(max_workers=128) as executor:
         
         # On soumet une tache de scan pour chaque port à l'executor et on garde une référence future_to_port pour associer les résultats aux ports scannés.
